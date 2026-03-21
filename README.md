@@ -119,7 +119,7 @@ This publishes random emotions every 2 seconds. Monitor the full pipeline throug
 6. **View the dashboard** at [localhost:3000](http://localhost:3000) (Grafana, default login: admin/admin).
 
 <p align="center">
-  <img src="images/Grafana-dashboard.png" alt="Grafana Dashboard" width="600">
+  <img src="images/grafana-v2-dashboard.png" alt="Grafana Dashboard" width="600">
 </p>
 
 ## Dataset
