@@ -1,69 +1,151 @@
-"""
-This script is designed to run on a PC to read emotion data from an OpenMV Cam H7 Plus via UART and
-publish the detected emotions to an MQTT broker. The script performs the following tasks:
+"""MQTT publisher that bridges OpenMV Cam emotion data to an MQTT broker.
 
-1. Lists available serial ports and selects the correct one for the OpenMV camera.
-2. Initializes an MQTT client and connects to the specified MQTT broker.
-3. Continuously reads emotion data from the serial port.
-4. Publishes the detected emotions to the MQTT broker under the topic "ezan/emotion_detection".
-
-Key functionalities:
-- Serial communication with the OpenMV camera.
-- MQTT communication to publish emotion data.
+Reads emotion classifications from the OpenMV Cam via UART (serial) and
+publishes them to a configurable MQTT broker. Supports a --demo mode that
+generates synthetic emotions for testing the pipeline without hardware.
 """
+
+import argparse
+import logging
+import os
+import random
+import sys
+import time
 
 import paho.mqtt.client as mqtt
 import serial
-import time
-import os
+import serial.tools.list_ports
 
-# Function to list available serial ports
-def list_serial_ports():
-    ports = [port for port in os.listdir('/dev') if 'tty.usbmodem' in port]
-    return ['/dev/' + port for port in ports]
+EMOTIONS = ["happy", "sad", "angry", "neutral", "surprised", "fearful"]
 
-# Identify available serial ports
-available_ports = list_serial_ports()
-print(f"Available serial ports: {available_ports}")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+log = logging.getLogger(__name__)
 
-# Select the correct serial port (assuming only one OpenMV camera is connected)
-if available_ports:
-    serial_port = available_ports[0]
-else:
-    raise Exception("No serial ports found. Ensure your OpenMV camera is connected.")
 
-print(f"Using serial port: {serial_port}")
+def find_openmv_port() -> str | None:
+    """Auto-detect the OpenMV Cam serial port (cross-platform)."""
+    for port in serial.tools.list_ports.comports():
+        if "OpenMV" in (port.description or "") or "usbmodem" in (port.device or ""):
+            return port.device
+    return None
 
-# MQTT settings
-MQTT_BROKER = "x.x.x.x"
-MQTT_PORT = yyyyy
-MQTT_TOPIC = "your_topic"
-MQTT_USERNAME = "your_username"
-MQTT_PASSWORD = "your_password"
-MQTT_CLIENT_ID = "your_client_id"
 
-# Initialize MQTT client with the correct callback API version
-mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, MQTT_CLIENT_ID)
-mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+def create_mqtt_client(
+    broker: str,
+    port: int,
+    username: str | None,
+    password: str | None,
+    client_id: str,
+) -> mqtt.Client:
+    """Create and connect an MQTT client."""
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id)
+    if username:
+        client.username_pw_set(username, password)
+    client.connect(broker, port, keepalive=60)
+    return client
 
-# Initialize serial connection
-ser = serial.Serial(serial_port, 115200, timeout=1)  # Use the identified serial port
 
-def send_emotion(emotion):
-    mqtt_client.publish(MQTT_TOPIC, emotion)
-    print(f"Published emotion: {emotion}")
+def run_serial(mqtt_client: mqtt.Client, topic: str, port: str) -> None:
+    """Read emotions from serial and publish to MQTT."""
+    ser = serial.Serial(port, 115200, timeout=1)
+    log.info("Listening on %s ...", port)
 
-print("Listening for data on serial port...")
+    while True:
+        try:
+            line = ser.readline().decode("utf-8").strip()
+            if line:
+                mqtt_client.publish(topic, line)
+                log.info("Published: %s", line)
+            mqtt_client.loop()
+        except serial.SerialException as e:
+            log.error("Serial error: %s", e)
+            break
+        except KeyboardInterrupt:
+            break
+        time.sleep(0.1)
 
-while True:
-    try:
-        line = ser.readline().decode('utf-8').strip()
-        if line:
-            send_emotion(line)  # Publish only the emotion detected
-        mqtt_client.loop()
-    except serial.SerialException as e:
-        print(f"Serial error: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-    time.sleep(0.1)
+
+def run_demo(mqtt_client: mqtt.Client | None, topic: str) -> None:
+    """Publish random emotions for pipeline testing (no hardware needed)."""
+    log.info("Demo mode - publishing random emotions every 2 s")
+
+    while True:
+        try:
+            emotion = random.choice(EMOTIONS)
+            if mqtt_client:
+                mqtt_client.publish(topic, emotion)
+                mqtt_client.loop()
+            log.info("Published: %s", emotion)
+            time.sleep(2)
+        except KeyboardInterrupt:
+            break
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Bridge OpenMV emotion data to MQTT",
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run in demo mode with synthetic emotions (no camera needed)",
+    )
+    parser.add_argument(
+        "--port",
+        type=str,
+        default=None,
+        help="Serial port override (e.g. /dev/ttyUSB0, COM3)",
+    )
+    parser.add_argument(
+        "--no-mqtt",
+        action="store_true",
+        help="Skip MQTT connection (log to stdout only, useful with --demo)",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    broker = os.getenv("MQTT_BROKER", "localhost")
+    port = int(os.getenv("MQTT_PORT", "1883"))
+    topic = os.getenv("MQTT_TOPIC", "ezan/emotion_detection")
+    username = os.getenv("MQTT_USERNAME") or None
+    password = os.getenv("MQTT_PASSWORD") or None
+    client_id = os.getenv("MQTT_CLIENT_ID", "openmv-emotion")
+
+    mqtt_client = None
+    if not args.no_mqtt:
+        try:
+            mqtt_client = create_mqtt_client(
+                broker, port, username, password, client_id
+            )
+            log.info("Connected to MQTT broker at %s:%d", broker, port)
+        except Exception as e:
+            if args.demo:
+                log.warning(
+                    "Could not connect to MQTT broker: %s (continuing in stdout-only mode)",
+                    e,
+                )
+            else:
+                log.error("Could not connect to MQTT broker: %s", e)
+                sys.exit(1)
+
+    if args.demo:
+        run_demo(mqtt_client, topic)
+    else:
+        serial_port = args.port or find_openmv_port()
+        if not serial_port:
+            log.error(
+                "No OpenMV camera found. Use --port to specify manually, or --demo for testing."
+            )
+            sys.exit(1)
+        log.info("Using serial port: %s", serial_port)
+        run_serial(mqtt_client, topic, serial_port)
+
+
+if __name__ == "__main__":
+    main()

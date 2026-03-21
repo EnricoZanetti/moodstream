@@ -1,0 +1,55 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./pipeline/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+
+  nodered:
+    build: ./pipeline/nodered
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./pipeline/node-red-flows.json:/data/flows.json
+      - ./pipeline/nodered/flows_cred.json:/data/flows_cred.json
+      - ./pipeline/nodered/settings.js:/data/settings.js
+    depends_on:
+      - mosquitto
+
+  influxdb:
+    image: influxdb:2
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: emotion-detection
+      DOCKER_INFLUXDB_INIT_BUCKET: emotions
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: demo-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./pipeline/grafana/provisioning:/etc/grafana/provisioning
+      - ./pipeline/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - influxdb
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:
+  influxdb-data:
+  grafana-data:
