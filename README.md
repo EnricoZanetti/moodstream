@@ -1,131 +1,158 @@
-# Emotion Detection Using Neural Networks on Embedded Systems
+# Emotion Detection on Embedded Systems
 
-For detailed information on the implementation, refer to the [report](https://github.com/EnricoZanetti/Embedded-EmotionNN/blob/main/report/IoT_Project_Report.pdf) in the repository.
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform: OpenMV H7+](https://img.shields.io/badge/Platform-OpenMV%20H7%2B-orange.svg)](https://openmv.io/products/openmv-cam-h7-plus)
+[![Version: Aurora](https://img.shields.io/badge/Version-Aurora%20(v2)-blueviolet.svg)](#)
 
-## Overview
+Real-time facial emotion detection running on the **OpenMV Cam H7 Plus**, a resource-constrained edge device. Detected emotions flow through a full IoT pipeline - UART to MQTT to InfluxDB - and are visualized in a live Grafana dashboard.
 
-This repository contains the implementation of a project aimed at optimizing a neural network for real-time emotion detection using the OpenMV Cam H7 Plus, a resource-constrained edge device, and the Edge Impulse platform.
+<p align="center">
+  <img src="images/gif-iot-test-video.gif" alt="Demo" width="600">
+</p>
 
-The project includes setting up the hardware and software environments, collecting and preprocessing the FER2013 dataset, applying transfer learning, and optimizing the model for deployment on the OpenMV Cam H7 Plus. The system was tested and achieved an accuracy of 51.0% in classifying emotions. Face detection was integrated to improve accuracy by focusing on relevant image regions. Real-time data transmission and visualization were implemented using UART communication protocol, MQTT and Grafana, demonstrating potential for continuous monitoring of emotional states. Data were then fetched from the broker by using Node Red and transmitted to a InfluxDB database for persistent storage. The project showcases the feasibility of deploying emotion detection on edge devices and highlights areas for future improvement, such as enhancing model accuracy, real-time feedback, security, and integration with additional sensors.
+## Architecture
 
-![Pipeline of the project](https://github.com/EnricoZanetti/Emotion-Detection-Using-Neural-Networks-on-Embedded-Systems/blob/main/images/IoT-pipeline.png)
+<p align="center">
+  <img src="images/emotion_detection_iot_architecture.svg" alt="IoT Pipeline" width="700">
+</p>
 
-## Table of Contents
-- [Overview](#overview)
-- [Installation](#installation)
-- [Dataset](#dataset)
-- [Methodology](#methodology)
-- [Results](#results)
-- [Challenges and Limitations](#challenges-and-limitations)
-- [Future Improvements](#future-improvements)
-- [Conclusion](#conclusion)
-- [License](#license)
-- [References](#references)
+## Key Results
 
-## Installation
+| Metric | Value |
+|--------|-------|
+| Accuracy | 51.0% (6-class emotion classification) |
+| Inference | Real-time on OpenMV Cam H7+ |
+| Classes | Happy, Sad, Angry, Neutral, Surprised, Fearful |
+| Dataset | FER2013 (~30,000 grayscale 48x48 images) |
 
-### Requirements
-- OpenMV Cam H7 Plus
-- OpenMV IDE
-- Python 3.12.4
-- Edge Impulse account
-- MQTT broker (e.g., Mosquitto)
-- Node-Red
-- InfluxDB
-- Grafana
+<p align="center">
+  <img src="images/final-model-accuracy.png" alt="Model Accuracy" width="500">
+</p>
 
-### Setup
+> **Note:** This is **the second version (v2)** of the project - a major refactor with a fully containerized IoT pipeline, demo mode, and improved code quality. The [project report](report/IoT_Project_Report.pdf) documents the original version (v1), covering the initial research, model training methodology, and hardware experiments.
 
-1. **Clone the repository:**
+## Project Structure
+
+```
+├── firmware/               # MicroPython code running on the OpenMV Cam
+│   ├── main.py             # Face detection + emotion classification + UART output
+│   └── README.md           # Flashing instructions
+├── host/                   # Python code running on a connected PC
+│   └── mqtt_publisher.py   # UART-to-MQTT bridge with demo mode
+├── pipeline/               # IoT infrastructure configuration
+│   └── node-red-flows.json # Node-Red flow: MQTT → InfluxDB
+├── notebooks/              # Data analysis
+│   └── dataset_analysis.ipynb
+├── images/                 # Diagrams, screenshots, demo GIF
+├── report/                 # Project report (PDF)
+├── docker-compose.yml      # One-command IoT pipeline setup
+├── Makefile                # Common development commands
+├── .env.example            # MQTT configuration template
+├── pyproject.toml          # Project metadata and dependencies (managed by uv)
+└── uv.lock                 # Locked dependency versions
+```
+
+## Quick Start
+
+### Try the Demo (No Hardware Needed)
+
+Spin up the full IoT pipeline locally and feed it synthetic emotion data:
+
+```bash
+# 1. Start the pipeline (Mosquitto, Node-Red, InfluxDB, Grafana)
+make pipeline-up
+
+# 2. Run the publisher in demo mode
+cp .env.example .env    # edit .env if needed
+make demo
+```
+
+This publishes random emotions every 2 seconds. Monitor the full pipeline through these dashboards:
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Grafana** | [localhost:3000](http://localhost:3000) | Emotion detection dashboard (no login required) |
+| **Node-Red** | [localhost:1880](http://localhost:1880) | Flow editor - inspect MQTT → InfluxDB pipeline |
+| **InfluxDB** | [localhost:8086](http://localhost:8086) | Time-series database UI (login: `admin` / `adminpassword`) |
+| **Mosquitto** | `localhost:1883` | MQTT broker (no UI - use an MQTT client to inspect) |
+
+### Full Hardware Setup
+
+#### Requirements
+
+- OpenMV Cam H7 Plus + [OpenMV IDE](https://openmv.io/pages/download)
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- Docker & Docker Compose (for the IoT pipeline)
+
+#### Steps
+
+1. **Clone and install dependencies:**
    ```bash
-   git clone https://github.com/EnricoZanetti/Embedded-EmotionNN
-   cd Emotion-Detection-Using-Neural-Networks-on-Embedded-Systems
+   git clone https://github.com/EnricoZanetti/Embedded-EmotionNN.git
+   cd Embedded-EmotionNN
+   make setup
    ```
 
-2. **Create a virtual environment and install dependencies:**
+2. **Train and deploy the model:**
+   - Create an [Edge Impulse](https://www.edgeimpulse.com/) project
+   - Upload the [FER2013 dataset](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) (~30,000 images, balanced across 6 classes)
+   - Design an impulse with image processing + transfer learning blocks
+   - Use the EON Tuner to select an optimal model for the H7+
+   - Export the trained model as `trained.tflite` with a `labels.txt`
+
+3. **Flash the camera** - see [firmware/README.md](firmware/README.md)
+
+4. **Start the IoT pipeline:**
    ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+   make pipeline-up
+   ```
+   Then import `pipeline/node-red-flows.json` into Node-Red at [localhost:1880](http://localhost:1880).
+
+5. **Run the MQTT publisher:**
+   ```bash
+   cp .env.example .env   # configure your MQTT settings
+   python host/mqtt_publisher.py
    ```
 
-3. **Set up OpenMV Cam H7 Plus:**
-   - Install the OpenMV IDE and follow the setup instructions for the OpenMV Cam H7 Plus.
-   - Upload the `main.py` script to the OpenMV Cam's memory.
+6. **View the dashboard** at [localhost:3000](http://localhost:3000) (Grafana, default login: admin/admin).
 
-4. **Configure Edge Impulse:**
-   - Sign up for an Edge Impulse account and follow the instructions to create a new project.
-   - Upload the FER2013 dataset to Edge Impulse and follow the impulse design and model training steps.
-
-5. **Configure MQTT, Node-Red, InfluxDB, and Grafana:**
-   - Set up an MQTT broker and configure it to receive data from the OpenMV Cam.
-   - Set up an InfluxDB instance and create a database to store the emotion detection data.
-   - Upload the `node-red-flows.json` file into Node-Red to fetch data from the MQTT broker, process it and send it to the database.
-   - Configure a Grafana dashboard to visualize the real-time data.
+<p align="center">
+  <img src="images/Grafana-dashboard.png" alt="Grafana Dashboard" width="600">
+</p>
 
 ## Dataset
 
-The FER2013 (Facial Expression Recognition 2013) dataset is used for training the neural network. This dataset contains approximately 35,000 grayscale images of facial expressions categorized into seven emotions: Happy, Sad, Fearful, Neutral, Angry, Surprise, and Disgust. For this project, the Disgust class was discarded due to the low number of images.
+The [FER2013](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) dataset contains ~35,000 grayscale facial expression images categorized into 7 emotions. The Disgust class was discarded due to insufficient samples, leaving 6 classes. The dataset was further reduced to ~30,000 images due to Edge Impulse free-tier limits, keeping classes balanced.
 
-## Methodology
-
-1. **Work Environment Preparation:**
-   - Set up the OpenMV Cam H7 Plus and configure development environments.
-   - Create virtual environments and install necessary requirements.
-
-2. **Dataset Collection and Preprocessing:**
-   - Download the FER2013 dataset from [Kaggle](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data).
-   - Preprocess the dataset, including resizing and normalizing images. Due to the limitation of the Edge Impulse account, the dataset was reduced from 35,000 images to 30,000. Be careful to maintain the number of images balanced for each class.
-
-3. **Impulse Design and Transfer Learning:**
-   - Use Edge Impulse to design the impulse, including processing and learning blocks.
-   - Apply transfer learning to adapt a pre-trained model for emotion detection.
-
-4. **Model Selection and Retraining:**
-   - Use the EON Tuner to select the best model for the OpenMV Cam H7 Plus.
-   - Retrain the selected model to improve accuracy.
-
-5. **Deployment:**
-   - Deploy the trained model to the OpenMV Cam H7 Plus.
-   - Run the `main.py` script on the OpenMV Cam to perform real-time emotion detection.
-
-6. **Data Transmission and Visualization:**
-   - Run the `openmv_emotion_mqtt_publisher.py` script on a PC to retreive the classified emotion by using UART communication protocol.
-   - Use MQTT to transmit detected emotions to an MQTT broker.
-   - Store the data in an InfluxDB database and visualize it using a Grafana dashboard.
-
-## Results
-
-The project achieved an accuracy of 51.0% in classifying emotions on the OpenMV Cam H7 Plus. The real-time data transmission and visualization components demonstrated the potential for continuous monitoring of emotional states.
+Explore the dataset distribution in [`notebooks/dataset_analysis.ipynb`](notebooks/dataset_analysis.ipynb).
 
 ## Challenges and Limitations
 
-- Limited training epochs due to Edge Impulse account restrictions.
-- Serial port transmission can be improved by using wireless communication protocols such as UDP and a WiFi shield.
-- Lack of real-time feedback for the user during emotion detection.
+- **Model accuracy** - 51% is limited by short training epochs (Edge Impulse free-tier constraint) and the small, noisy FER2013 dataset
+- **Wired communication** - UART requires a physical USB connection; a WiFi shield with UDP would enable wireless operation
+- **No real-time user feedback** - the system detects emotions but doesn't provide feedback to the subject
 
 ## Future Improvements
 
-- Enhance model accuracy with larger and more diverse datasets.
-- Longer training time can improve model's accuracy.
-- Develop a user interface for real-time feedback.
-- Implement enhanced security measures for data transmission.
-- Integrate additional sensors for a more comprehensive analysis of emotional states.
-- Explore deployment on alternative platforms with greater computational power.
-
-## Conclusion
-
-This project showcases the feasibility of deploying emotion detection on edge devices and highlights areas for future improvement. The system has potential applications in human-computer interaction, healthcare, and security, enhancing the interaction between humans and machines in meaningful ways.
+- Train with larger/cleaner datasets and longer epochs for higher accuracy
+- Add a WiFi shield for wireless communication (UDP or MQTT directly from the camera)
+- Build a user-facing interface for real-time emotion feedback
+- Add TLS encryption for secure MQTT communication
+- Integrate additional sensors (e.g., heart rate) for multimodal emotion analysis
+- Explore more powerful edge platforms (e.g., Jetson Nano) for larger models
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## References
 
-- FER2013 dataset: [Kaggle](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data)
-- OpenMV Cam H7 Plus: [OpenMV](https://openmv.io/products/openmv-cam-h7-plus)
-- Edge Impulse: [Edge Impulse](https://www.edgeimpulse.com/)
-- MQTT: [Eclipse Mosquitto](https://mosquitto.org/)
-- InfluxDB: [InfluxDB](https://www.influxdata.com/)
-- Grafana: [Grafana](https://grafana.com/)
+- [FER2013 Dataset](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) - Kaggle
+- [OpenMV Cam H7 Plus](https://openmv.io/products/openmv-cam-h7-plus) - OpenMV
+- [Edge Impulse](https://www.edgeimpulse.com/) - ML model training platform
+- [Eclipse Mosquitto](https://mosquitto.org/) - MQTT broker
+- [Node-Red](https://nodered.org/) - Flow-based IoT programming
+- [InfluxDB](https://www.influxdata.com/) - Time-series database
+- [Grafana](https://grafana.com/) - Data visualization
