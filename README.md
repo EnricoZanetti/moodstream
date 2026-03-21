@@ -3,7 +3,7 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform: OpenMV H7+](https://img.shields.io/badge/Platform-OpenMV%20H7%2B-orange.svg)](https://openmv.io/products/openmv-cam-h7-plus)
-[![Version: Aurora](https://img.shields.io/badge/Version-Aurora%20(v2)-blueviolet.svg)](#)
+[![Version: ](https://img.shields.io/badge/Version-v2.0.1-blueviolet.svg)](#)
 
 Real-time facial emotion detection running on the **OpenMV Cam H7 Plus**, a resource-constrained edge device. Detected emotions flow through a full IoT pipeline - UART to MQTT to InfluxDB - and are visualized in a live Grafana dashboard.
 
