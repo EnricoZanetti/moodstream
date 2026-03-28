@@ -1,6 +1,6 @@
 [project]
 name = "moodstream"
-version = "3.0.0"
+version = "3.0.2"
 description = "Real-time webcam emotion detection with a full IoT pipeline (MQTT, Node-Red, InfluxDB, Grafana)"
 requires-python = ">=3.12"
 license = "MIT"
@@ -25,7 +25,7 @@ notebooks = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-exclude = ["firmware/"]       # MicroPython — not standard Python
+exclude = ["firmware/"]       # MicroPython - not standard Python
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]

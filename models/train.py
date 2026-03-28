@@ -16,7 +16,7 @@ MODEL_DIR = Path(__file__).parent
 FER2013_PATH = MODEL_DIR / "fer2013.csv"
 OUTPUT_PATH = MODEL_DIR / "emotion_model.tflite"
 
-# FER2013 emotion mapping — we drop class 1 (Disgust) due to low sample count
+# FER2013 emotion mapping - we drop class 1 (Disgust) due to low sample count
 # Original: 0=Angry, 1=Disgust, 2=Fear, 3=Happy, 4=Sad, 5=Surprise, 6=Neutral
 # Ours:     0=Happy, 1=Sad, 2=Angry, 3=Neutral, 4=Surprised, 5=Fearful
 FER_TO_OURS = {3: 0, 4: 1, 0: 2, 6: 3, 5: 4, 2: 5}
