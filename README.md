@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version: v3.0.0](https://img.shields.io/badge/Version-v3.0.0-blueviolet.svg)](#)
+[![Version: v3.0.1](https://img.shields.io/badge/Version-v3.0.1-blueviolet.svg)](#)
 
 Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN model. Detected emotions flow through a full IoT pipeline — MQTT to Node-Red to InfluxDB — and are visualized in a live Grafana dashboard.
 
