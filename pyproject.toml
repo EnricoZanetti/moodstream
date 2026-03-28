@@ -1,12 +1,15 @@
 [project]
 name = "embedded-emotionnn"
-version = "1.0.0"
-description = "Real-time emotion detection on the OpenMV Cam H7 Plus with a full IoT pipeline"
+version = "3.0.0"
+description = "Real-time webcam emotion detection with a full IoT pipeline (MQTT, Node-Red, InfluxDB, Grafana)"
 requires-python = ">=3.12"
 license = "MIT"
 dependencies = [
+    "numpy>=1.26.0",
+    "opencv-python>=4.9.0",
     "paho-mqtt>=2.1.0",
     "pyserial>=3.5",
+    "tensorflow>=2.16.0",
 ]
 
 [dependency-groups]

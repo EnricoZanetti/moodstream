@@ -1,4 +1,6 @@
-# Firmware - OpenMV Cam H7 Plus
+# Firmware - OpenMV Cam H7 Plus (Legacy)
+
+> **Note:** This is the legacy v1/v2 firmware for the OpenMV Cam H7+. For the current webcam-based version (v3), see [`src/detector.py`](../src/detector.py).
 
 This directory contains the MicroPython script that runs directly on the OpenMV Cam H7 Plus.
 
