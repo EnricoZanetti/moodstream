@@ -1,4 +1,4 @@
-# Emotion Detection Model
+# Moodstream Model
 
 This directory contains the TFLite model used by `src/detector.py` for real-time emotion classification.
 

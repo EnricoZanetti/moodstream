@@ -2,7 +2,7 @@
     {
         "id": "df1af71b9c007b40",
         "type": "tab",
-        "label": "Emotion-Detection",
+        "label": "Moodstream",
         "disabled": false,
         "info": "",
         "env": []
@@ -12,7 +12,7 @@
         "type": "mqtt in",
         "z": "df1af71b9c007b40",
         "name": "",
-        "topic": "ezan/emotion_detection",
+        "topic": "ezan/moodstream",
         "qos": "2",
         "datatype": "auto-detect",
         "broker": "c51d12a277fb316d",
@@ -56,7 +56,7 @@
         "database": "database",
         "precisionV18FluxV20": "ms",
         "retentionPolicyV18Flux": "",
-        "org": "emotion-detection",
+        "org": "moodstream",
         "bucket": "emotions",
         "x": 910,
         "y": 140,

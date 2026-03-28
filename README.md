@@ -1,4 +1,4 @@
-# Emotion Detection with IoT Pipeline
+# Moodstream
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -61,8 +61,8 @@ Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN
 ### 1. Setup
 
 ```bash
-git clone https://github.com/EnricoZanetti/Embedded-EmotionNN.git
-cd Embedded-EmotionNN
+git clone https://github.com/EnricoZanetti/moodstream.git
+cd moodstream
 make setup
 cp .env.example .env   # edit if needed
 ```

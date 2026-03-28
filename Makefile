@@ -22,7 +22,7 @@ format:
 	uv run ruff format .
 
 export-dashboard:
-	@curl -s "http://localhost:3000/api/dashboards/uid/emotion-detection" \
+	@curl -s "http://localhost:3000/api/dashboards/uid/moodstream" \
 		| python3 -c "import sys,json;d=json.load(sys.stdin)['dashboard'];d.pop('id',None);d.pop('version',None);print(json.dumps(d,indent=2))" \
 		> pipeline/grafana/dashboards/emotion-detection.json
 	@echo "Dashboard exported to pipeline/grafana/dashboards/emotion-detection.json"
