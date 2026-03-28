@@ -1,5 +1,5 @@
 [project]
-name = "embedded-emotionnn"
+name = "moodstream"
 version = "3.0.0"
 description = "Real-time webcam emotion detection with a full IoT pipeline (MQTT, Node-Red, InfluxDB, Grafana)"
 requires-python = ">=3.12"

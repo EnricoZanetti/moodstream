@@ -27,7 +27,7 @@ services:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: admin
       DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
-      DOCKER_INFLUXDB_INIT_ORG: emotion-detection
+      DOCKER_INFLUXDB_INIT_ORG: moodstream
       DOCKER_INFLUXDB_INIT_BUCKET: emotions
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: demo-token
     volumes:

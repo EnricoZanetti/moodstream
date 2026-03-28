@@ -174,7 +174,7 @@ def run_webcam(
                     )
 
             if show_display:
-                cv2.imshow("Emotion Detection", frame)
+                cv2.imshow("Moodstream", frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -217,10 +217,10 @@ def main() -> None:
 
     broker = os.getenv("MQTT_BROKER", "localhost")
     port = int(os.getenv("MQTT_PORT", "1883"))
-    topic = os.getenv("MQTT_TOPIC", "ezan/emotion_detection")
+    topic = os.getenv("MQTT_TOPIC", "ezan/moodstream")
     username = os.getenv("MQTT_USERNAME") or None
     password = os.getenv("MQTT_PASSWORD") or None
-    client_id = os.getenv("MQTT_CLIENT_ID", "webcam-emotion")
+    client_id = os.getenv("MQTT_CLIENT_ID", "moodstream")
 
     mqtt_client = None
     if not args.no_mqtt:

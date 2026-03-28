@@ -574,7 +574,7 @@
   "refresh": "5s",
   "schemaVersion": 42,
   "tags": [
-    "emotion-detection",
+    "moodstream",
     "iot",
     "edge-ml"
   ],
@@ -595,8 +595,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "Emotion Detection - Real-Time Dashboard",
-  "uid": "emotion-detection",
+  "title": "Moodstream - Real-Time Dashboard",
+  "uid": "moodstream",
   "version": 9,
   "weekStart": ""
 }

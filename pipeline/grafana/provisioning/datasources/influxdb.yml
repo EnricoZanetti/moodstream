@@ -7,7 +7,7 @@ datasources:
     url: http://influxdb:8086
     jsonData:
       version: Flux
-      organization: emotion-detection
+      organization: moodstream
       defaultBucket: emotions
     secureJsonData:
       token: "demo-token"

@@ -112,10 +112,10 @@ def main() -> None:
 
     broker = os.getenv("MQTT_BROKER", "localhost")
     port = int(os.getenv("MQTT_PORT", "1883"))
-    topic = os.getenv("MQTT_TOPIC", "ezan/emotion_detection")
+    topic = os.getenv("MQTT_TOPIC", "ezan/moodstream")
     username = os.getenv("MQTT_USERNAME") or None
     password = os.getenv("MQTT_PASSWORD") or None
-    client_id = os.getenv("MQTT_CLIENT_ID", "openmv-emotion")
+    client_id = os.getenv("MQTT_CLIENT_ID", "moodstream")
 
     mqtt_client = None
     if not args.no_mqtt:
