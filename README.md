@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version: v3.0.1](https://img.shields.io/badge/Version-v3.0.1-blueviolet.svg)](#)
 
-Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN model. Detected emotions flow through a full IoT pipeline — MQTT to Node-Red to InfluxDB — and are visualized in a live Grafana dashboard.
+Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN model. Detected emotions flow through a full IoT pipeline - MQTT to Node-Red to InfluxDB - and are visualized in a live Grafana dashboard.
 
 > **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, train the model (or bring your own), `make run`, and see emotions flowing through the pipeline. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
 
@@ -103,7 +103,7 @@ make run            # opens webcam, detects faces, classifies + publishes emotio
 | Service | URL | Description |
 |---------|-----|-------------|
 | **Grafana** | [localhost:3000](http://localhost:3000) | Emotion detection dashboard (no login required) |
-| **Node-Red** | [localhost:1880](http://localhost:1880) | Flow editor — inspect MQTT → InfluxDB pipeline |
+| **Node-Red** | [localhost:1880](http://localhost:1880) | Flow editor - inspect MQTT → InfluxDB pipeline |
 | **InfluxDB** | [localhost:8086](http://localhost:8086) | Time-series database UI (login: `admin` / `adminpassword`) |
 | **Mosquitto** | `localhost:1883` | MQTT broker (use an MQTT client to inspect) |
 
@@ -126,7 +126,7 @@ The v1/v2 architecture used an OpenMV Cam H7+ for on-device inference, sending e
 #### Steps
 
 1. Train a model via [Edge Impulse](https://www.edgeimpulse.com/) and export as `trained.tflite` + `labels.txt`
-2. Flash the camera — see [firmware/README.md](firmware/README.md)
+2. Flash the camera - see [firmware/README.md](firmware/README.md)
 3. `make pipeline-up`
 4. `python host/mqtt_publisher.py`
 5. View dashboard at [localhost:3000](http://localhost:3000)
@@ -141,9 +141,9 @@ Explore the dataset distribution in [`notebooks/dataset_analysis.ipynb`](noteboo
 
 ## Challenges and Limitations
 
-- **Model accuracy** — FER2013 is small and noisy; accuracy is limited compared to larger datasets
-- **Lighting & angle** — webcam detection is sensitive to lighting conditions and face angle
-- **Single face focus** — publishes the first detected face's emotion per interval
+- **Model accuracy** - FER2013 is small and noisy; accuracy is limited compared to larger datasets
+- **Lighting & angle** - webcam detection is sensitive to lighting conditions and face angle
+- **Single face focus** - publishes the first detected face's emotion per interval
 
 ## Future Improvements
 
@@ -158,10 +158,10 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## References
 
-- [FER2013 Dataset](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) — Kaggle
-- [OpenCV Haar Cascades](https://docs.opencv.org/4.x/db/d28/tutorial_cascade_classifier.html) — Face detection
-- [TensorFlow Lite](https://www.tensorflow.org/lite) — On-device ML inference
-- [Eclipse Mosquitto](https://mosquitto.org/) — MQTT broker
-- [Node-Red](https://nodered.org/) — Flow-based IoT programming
-- [InfluxDB](https://www.influxdata.com/) — Time-series database
-- [Grafana](https://grafana.com/) — Data visualization
+- [FER2013 Dataset](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) - Kaggle
+- [OpenCV Haar Cascades](https://docs.opencv.org/4.x/db/d28/tutorial_cascade_classifier.html) - Face detection
+- [TensorFlow Lite](https://www.tensorflow.org/lite) - On-device ML inference
+- [Eclipse Mosquitto](https://mosquitto.org/) - MQTT broker
+- [Node-Red](https://nodered.org/) - Flow-based IoT programming
+- [InfluxDB](https://www.influxdata.com/) - Time-series database
+- [Grafana](https://grafana.com/) - Data visualization
