@@ -14,14 +14,8 @@ Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN
 
 ## Architecture
 
-```
-Laptop Webcam ──► src/detector.py ──► MQTT ──► Node-Red ──► InfluxDB ──► Grafana
-                  (face detection       │
-                   + TFLite CNN)        └──► stdout (logging)
-```
-
 <p align="center">
-  <img src="images/emotion_detection_iot_architecture.svg" alt="IoT Pipeline" width="700">
+  <img src="images/embedded_emotion_nn_pipeline.svg" alt="IoT Pipeline" width="700">
 </p>
 
 ## Key Results
