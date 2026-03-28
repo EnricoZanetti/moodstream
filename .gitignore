@@ -29,5 +29,8 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# Model files
-*.tflite
+# Model files (allow models/ directory to ship pre-trained models)
+/*.tflite
+
+# Large datasets
+models/fer2013.csv

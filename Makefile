@@ -1,13 +1,19 @@
-.PHONY: setup demo demo-local lint format export-dashboard pipeline-up pipeline-down clean
+.PHONY: setup run run-headless demo demo-local lint format export-dashboard pipeline-up pipeline-down clean
 
 setup:
 	uv sync
 
+run:
+	uv run python src/detector.py
+
+run-headless:
+	uv run python src/detector.py --no-display
+
 demo:
-	uv run python host/mqtt_publisher.py --demo
+	uv run python src/detector.py --demo
 
 demo-local:
-	uv run python host/mqtt_publisher.py --demo --no-mqtt
+	uv run python src/detector.py --demo --no-mqtt
 
 lint:
 	uv run ruff check .
