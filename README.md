@@ -1,4 +1,4 @@
-# Moodstream
+# MoodStream
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -9,7 +9,7 @@ Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN
 > **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, train the model (or bring your own), `make run`, and see emotions flowing through the pipeline. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
 
 <p align="center">
-  <img src="images/gif-iot-test-video.gif" alt="Demo" width="600">
+  <video src="images/moodstream-video.mov" alt="Demo" width="600" controls></video>
 </p>
 
 ## Architecture
