@@ -8,9 +8,7 @@ Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN
 
 > **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, train the model (or bring your own), `make run`, and see emotions flowing through the pipeline. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
 
-<p align="center">
-  <video src="images/moodstream-video.mov" alt="Demo" width="600" controls></video>
-</p>
+![Demo](images/moodstream-demo-gif.gif)
 
 ## Architecture
 
