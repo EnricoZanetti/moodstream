@@ -6,9 +6,9 @@
 
 Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN model. Detected emotions flow through a full IoT pipeline - MQTT to Node-Red to InfluxDB - and are visualized in a live Grafana dashboard.
 
-> **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, train the model (or bring your own), `make run`, and see emotions flowing through the pipeline. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
-
 ![Demo](images/moodstream-demo-gif.gif)
+
+> **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, train the model (or bring your own), `make run`, and see emotions flowing through the pipeline. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
 
 ## Architecture
 
