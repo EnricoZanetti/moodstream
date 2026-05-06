@@ -1,54 +1,68 @@
-"""Train a small CNN on FER2013 and export as TFLite.
+"""Train a small CNN on AffectNet and export as TFLite.
 
 Usage:
     uv run python models/train.py
 
-Requires fer2013.csv in the models/ directory (download from Kaggle).
+Requires the AffectNet/ directory in models/ with Train/ and Test/ subdirectories.
 """
 
 import os
 from pathlib import Path
 
+import cv2
 import numpy as np
 import tensorflow as tf
 
 MODEL_DIR = Path(__file__).parent
-FER2013_PATH = MODEL_DIR / "fer2013.csv"
+AFFECTNET_DIR = MODEL_DIR / "AffectNet"
 OUTPUT_PATH = MODEL_DIR / "emotion_model.tflite"
 
-# FER2013 emotion mapping - we drop class 1 (Disgust) due to low sample count
-# Original: 0=Angry, 1=Disgust, 2=Fear, 3=Happy, 4=Sad, 5=Surprise, 6=Neutral
-# Ours:     0=Happy, 1=Sad, 2=Angry, 3=Neutral, 4=Surprised, 5=Fearful
-FER_TO_OURS = {3: 0, 4: 1, 0: 2, 6: 3, 5: 4, 2: 5}
+IMG_SIZE = 96
+NUM_CLASSES = 7
+
+# Map AffectNet folder names (lowercased) to our class indices
+# contempt is skipped (not in this dict)
+AFFECTNET_TO_OURS = {
+    "happy": 0,
+    "sad": 1,
+    "anger": 2,
+    "neutral": 3,
+    "surprise": 4,
+    "fear": 5,
+    "disgust": 6,
+}
 
 
-def load_fer2013() -> tuple[np.ndarray, np.ndarray]:
-    """Load FER2013 dataset from CSV, dropping Disgust class."""
-    import csv
+def load_split(split_dir: Path) -> tuple[np.ndarray, np.ndarray]:
+    """Load all images from an AffectNet split directory (Train or Test)."""
+    images, labels = [], []
 
-    pixels_list = []
-    labels_list = []
+    for class_dir in sorted(split_dir.iterdir()):
+        if not class_dir.is_dir():
+            continue
+        class_name = class_dir.name.lower()
+        if class_name not in AFFECTNET_TO_OURS:
+            continue
+        label = AFFECTNET_TO_OURS[class_name]
 
-    with open(FER2013_PATH) as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            fer_label = int(row["emotion"])
-            if fer_label not in FER_TO_OURS:
-                continue  # skip Disgust
-            pixels = np.fromstring(row["pixels"], sep=" ", dtype=np.float32).reshape(48, 48, 1)
-            pixels /= 255.0
-            pixels_list.append(pixels)
-            labels_list.append(FER_TO_OURS[fer_label])
+        for img_path in class_dir.iterdir():
+            img = cv2.imread(str(img_path))
+            if img is None:
+                continue
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
+            img = img.astype(np.float32) / 255.0
+            images.append(img.reshape(IMG_SIZE, IMG_SIZE, 1))
+            labels.append(label)
 
-    return np.array(pixels_list), np.array(labels_list)
+    return np.array(images), np.array(labels)
 
 
 def build_model():
-    """Build a small CNN for 48x48 grayscale emotion classification."""
-
+    """Build a CNN for 96x96 grayscale emotion classification (7 classes)."""
     model = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(48, 48, 1)),
+            tf.keras.layers.Input(shape=(IMG_SIZE, IMG_SIZE, 1)),
             # Block 1
             tf.keras.layers.Conv2D(32, (3, 3), padding="same", activation="relu"),
             tf.keras.layers.BatchNormalization(),
@@ -75,7 +89,7 @@ def build_model():
             tf.keras.layers.Dense(256, activation="relu"),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Dense(6, activation="softmax"),
+            tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
         ]
     )
 
@@ -89,7 +103,6 @@ def build_model():
 
 def convert_to_tflite(model) -> bytes:
     """Convert Keras model to quantized TFLite."""
-
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.target_spec.supported_types = [tf.float16]
@@ -97,20 +110,21 @@ def convert_to_tflite(model) -> bytes:
 
 
 def main() -> None:
-    if not FER2013_PATH.exists():
-        print(f"Error: {FER2013_PATH} not found.")
-        print("Download fer2013.csv from: https://www.kaggle.com/datasets/deadskull7/fer2013")
-        print(f"Place it in: {MODEL_DIR}/")
+    train_dir = AFFECTNET_DIR / "Train"
+    test_dir = AFFECTNET_DIR / "Test"
+
+    if not train_dir.exists() or not test_dir.exists():
+        print(f"Error: AffectNet dataset not found at {AFFECTNET_DIR}")
+        print("Expected structure: AffectNet/Train/<class>/ and AffectNet/Test/<class>/")
         raise SystemExit(1)
 
-    print("Loading FER2013 dataset...")
-    x, y = load_fer2013()
-    print(f"Loaded {len(x)} samples across 6 classes")
+    print("Loading AffectNet train set...")
+    x_train, y_train = load_split(train_dir)
+    print(f"Train: {len(x_train)} samples")
 
-    # Split: 80% train, 20% validation
-    split = int(len(x) * 0.8)
-    x_train, x_val = x[:split], x[split:]
-    y_train, y_val = y[:split], y[split:]
+    print("Loading AffectNet test set...")
+    x_val, y_val = load_split(test_dir)
+    print(f"Val:   {len(x_val)} samples")
 
     print("Building model...")
     model = build_model()

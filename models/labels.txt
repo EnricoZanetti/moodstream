@@ -4,3 +4,4 @@ angry
 neutral
 surprised
 fearful
+disgust

@@ -23,7 +23,7 @@ import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
 
-EMOTIONS = ["happy", "sad", "angry", "neutral", "surprised", "fearful"]
+EMOTIONS = ["happy", "sad", "angry", "neutral", "surprised", "fearful", "disgust"]
 
 MODEL_PATH = Path(__file__).parent.parent / "models" / "emotion_model.tflite"
 LABELS_PATH = Path(__file__).parent.parent / "models" / "labels.txt"
@@ -60,10 +60,10 @@ def load_tflite_model(path: Path):
 
 
 def preprocess_face(face_img: np.ndarray) -> np.ndarray:
-    """Resize face to 48x48, normalize, and reshape for model input."""
-    face = cv2.resize(face_img, (48, 48))
+    """Resize face to 96x96, normalize, and reshape for model input."""
+    face = cv2.resize(face_img, (96, 96))
     face = face.astype(np.float32) / 255.0
-    return face.reshape(1, 48, 48, 1)
+    return face.reshape(1, 96, 96, 1)
 
 
 def classify_emotion(interpreter, face_input: np.ndarray) -> tuple[str, float]:

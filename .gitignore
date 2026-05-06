@@ -34,3 +34,4 @@ Thumbs.db
 
 # Large datasets
 models/fer2013.csv
+models/AffectNet
