@@ -58,17 +58,46 @@ def load_split(split_dir: Path) -> tuple[np.ndarray, np.ndarray]:
     return np.array(images), np.array(labels)
 
 
-def build_model():
+class SEBlock(tf.keras.layers.Layer):
+    """Squeeze-and-Excitation block: recalibrates channel responses."""
+
+    def __init__(self, reduction: int = 16, **kwargs):
+        super().__init__(**kwargs)
+        self.reduction = reduction
+
+    def build(self, input_shape):
+        channels = input_shape[-1]
+        self.fc1 = tf.keras.layers.Dense(max(1, channels // self.reduction), activation="relu")
+        self.fc2 = tf.keras.layers.Dense(channels, activation="sigmoid")
+
+    def call(self, x):
+        se = tf.reduce_mean(x, axis=(1, 2))  # squeeze: global average pool
+        se = self.fc1(se)
+        se = self.fc2(se)
+        return x * se[:, tf.newaxis, tf.newaxis, :]  # excite: scale channels
+
+
+def build_model(steps_per_epoch: int):
     """Build a CNN for 96x96 grayscale emotion classification (7 classes)."""
+    lr_schedule = tf.keras.optimizers.schedules.CosineDecay(
+        initial_learning_rate=1e-3,
+        decay_steps=steps_per_epoch * 30,
+    )
+
     model = tf.keras.Sequential(
         [
             tf.keras.layers.Input(shape=(IMG_SIZE, IMG_SIZE, 1)),
+            # Augmentation (only active during training)
+            tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(0.1),
+            tf.keras.layers.RandomZoom(0.1),
             # Block 1
             tf.keras.layers.Conv2D(32, (3, 3), padding="same", activation="relu"),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Conv2D(32, (3, 3), padding="same", activation="relu"),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            SEBlock(),
             tf.keras.layers.Dropout(0.25),
             # Block 2
             tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation="relu"),
@@ -76,6 +105,7 @@ def build_model():
             tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation="relu"),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            SEBlock(),
             tf.keras.layers.Dropout(0.25),
             # Block 3
             tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
@@ -83,6 +113,7 @@ def build_model():
             tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            SEBlock(),
             tf.keras.layers.Dropout(0.25),
             # Dense
             tf.keras.layers.Flatten(),
@@ -94,8 +125,8 @@ def build_model():
     )
 
     model.compile(
-        optimizer="adam",
-        loss="sparse_categorical_crossentropy",
+        optimizer=tf.keras.optimizers.AdamW(learning_rate=lr_schedule, weight_decay=1e-4),
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(label_smoothing=0.1),
         metrics=["accuracy"],
     )
     return model
@@ -126,8 +157,11 @@ def main() -> None:
     x_val, y_val = load_split(test_dir)
     print(f"Val:   {len(x_val)} samples")
 
+    batch_size = 64
+    steps_per_epoch = len(x_train) // batch_size
+
     print("Building model...")
-    model = build_model()
+    model = build_model(steps_per_epoch)
     model.summary()
 
     print("Training...")
@@ -136,10 +170,9 @@ def main() -> None:
         y_train,
         validation_data=(x_val, y_val),
         epochs=30,
-        batch_size=64,
+        batch_size=batch_size,
         callbacks=[
             tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True),
-            tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=3),
         ],
     )
 
