@@ -126,7 +126,9 @@ def build_model(steps_per_epoch: int):
 
     model.compile(
         optimizer=tf.keras.optimizers.AdamW(learning_rate=lr_schedule, weight_decay=1e-4),
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(label_smoothing=0.1),
+        loss=lambda y, p: tf.keras.losses.CategoricalCrossentropy(label_smoothing=0.1)(
+            tf.one_hot(tf.cast(y, tf.int32), NUM_CLASSES), p
+        ),
         metrics=["accuracy"],
     )
     return model
