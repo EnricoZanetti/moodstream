@@ -1,4 +1,5 @@
-"""MQTT publisher that bridges OpenMV Cam emotion data to an MQTT broker.
+"""
+MQTT publisher that bridges OpenMV Cam emotion data to an MQTT broker.
 
 Reads emotion classifications from the OpenMV Cam via UART (serial) and
 publishes them to a configurable MQTT broker. Supports a --demo mode that
@@ -120,9 +121,7 @@ def main() -> None:
     mqtt_client = None
     if not args.no_mqtt:
         try:
-            mqtt_client = create_mqtt_client(
-                broker, port, username, password, client_id
-            )
+            mqtt_client = create_mqtt_client(broker, port, username, password, client_id)
             log.info("Connected to MQTT broker at %s:%d", broker, port)
         except Exception as e:
             if args.demo:

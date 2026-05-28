@@ -26,6 +26,9 @@ env/
 .DS_Store
 Thumbs.db
 
+# Old files
+/.old
+
 # Jupyter
 .ipynb_checkpoints/
 

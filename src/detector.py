@@ -1,4 +1,5 @@
-"""Webcam-based emotion detector with MQTT publishing.
+"""
+Webcam-based emotion detector with MQTT publishing.
 
 Captures frames from the laptop webcam, detects faces using a Haar cascade,
 classifies emotions with a TFLite model, and publishes results to an MQTT broker.
@@ -169,8 +170,13 @@ def run_webcam(
                     label = f"{emotion} ({confidence:.0%})"
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                     cv2.putText(
-                        frame, label, (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2,
+                        frame,
+                        label,
+                        (x, y - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        (0, 255, 0),
+                        2,
                     )
 
             if show_display:
