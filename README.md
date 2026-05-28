@@ -1,14 +1,16 @@
 # MoodStream
 
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version: v3.0.2](https://img.shields.io/badge/Version-v3.0.2-blueviolet.svg)](#)
+<a href="https://www.python.org/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Python-3.12-blue.svg" alt="Python 3.12"></a>
+<a href="LICENSE" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
+<img src="https://img.shields.io/badge/Version-v3.0.2-blueviolet.svg" alt="Version: v3.0.2">
 
 Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN model. Detected emotions flow through a full IoT pipeline - MQTT to Node-Red to InfluxDB - and are visualized in a live Grafana dashboard.
 
+> Read blog post here: [Introducing MoodStream](https://enricozanetti.dev/blog/introducing-moodstream/)
+
 ![Demo](images/moodstream-demo-gif.gif)
 
-> **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, train the model (or bring your own), `make run`, and see emotions flowing through the pipeline. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
+> **v3** replaces the OpenMV Cam H7+ hardware requirement with webcam-based detection. Clone, `make run`, and see emotions flowing through the pipeline. The pre-trained model is included — no training required. The [legacy OpenMV firmware](firmware/) is still available for hardware users.
 
 ## Architecture
 
@@ -32,9 +34,9 @@ Real-time facial emotion detection using your **laptop webcam** and a TFLite CNN
 ├── src/
 │   └── detector.py             # Webcam capture + face detection + emotion classification + MQTT
 ├── models/
-│   ├── emotion_model.tflite    # Pre-trained TFLite model
+│   ├── emotion_model.tflite    # Pre-trained TFLite model (ready to use)
 │   ├── labels.txt              # Emotion labels in model output order
-│   ├── train.py                # Training script (FER2013 → TFLite)
+│   ├── train.py                # Training script (FER2013 → TFLite) — optional, for retraining
 │   └── README.md               # Model documentation + how to swap
 ├── firmware/                   # Legacy OpenMV Cam H7+ code (v1/v2)
 │   ├── main.py
@@ -65,24 +67,14 @@ make setup
 cp .env.example .env   # edit if needed
 ```
 
-### 2. Train the Model (one-time)
-
-Download [FER2013](https://www.kaggle.com/datasets/deadskull7/fer2013) (`fer2013.csv`) into the `models/` directory, then:
-
-```bash
-uv run python models/train.py
-```
-
-This exports `models/emotion_model.tflite`. See [`models/README.md`](models/README.md) for details and how to swap in your own model.
-
-### 3. Try the Demo (No Webcam Needed)
+### 2. Try the Demo (No Webcam Needed)
 
 ```bash
 make pipeline-up    # start Mosquitto, Node-Red, InfluxDB, Grafana
 make demo           # publish random emotions every 2s
 ```
 
-### 4. Run with Webcam
+### 3. Run with Webcam
 
 ```bash
 make pipeline-up
@@ -100,9 +92,9 @@ make run            # opens webcam, detects faces, classifies + publishes emotio
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| **Grafana** | [localhost:3000](http://localhost:3000) | Emotion detection dashboard (no login required) |
-| **Node-Red** | [localhost:1880](http://localhost:1880) | Flow editor - inspect MQTT → InfluxDB pipeline |
-| **InfluxDB** | [localhost:8086](http://localhost:8086) | Time-series database UI (login: `admin` / `adminpassword`) |
+| **Grafana** | <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer">localhost:3000</a> | Emotion detection dashboard (no login required) |
+| **Node-Red** | <a href="http://localhost:1880" target="_blank" rel="noopener noreferrer">localhost:1880</a> | Flow editor - inspect MQTT → InfluxDB pipeline |
+| **InfluxDB** | <a href="http://localhost:8086" target="_blank" rel="noopener noreferrer">localhost:8086</a> | Time-series database UI (login: `admin` / `adminpassword`) |
 | **Mosquitto** | `localhost:1883` | MQTT broker (use an MQTT client to inspect) |
 
 <p align="center">
@@ -118,22 +110,22 @@ The v1/v2 architecture used an OpenMV Cam H7+ for on-device inference, sending e
 
 #### Requirements
 
-- OpenMV Cam H7 Plus + [OpenMV IDE](https://openmv.io/pages/download)
-- Python 3.12+, [uv](https://docs.astral.sh/uv/), Docker & Docker Compose
+- OpenMV Cam H7 Plus + <a href="https://openmv.io/pages/download" target="_blank" rel="noopener noreferrer">OpenMV IDE</a>
+- Python 3.12+, <a href="https://docs.astral.sh/uv/" target="_blank" rel="noopener noreferrer">uv</a>, Docker & Docker Compose
 
 #### Steps
 
-1. Train a model via [Edge Impulse](https://www.edgeimpulse.com/) and export as `trained.tflite` + `labels.txt`
+1. Train a model via <a href="https://www.edgeimpulse.com/" target="_blank" rel="noopener noreferrer">Edge Impulse</a> and export as `trained.tflite` + `labels.txt`
 2. Flash the camera - see [firmware/README.md](firmware/README.md)
 3. `make pipeline-up`
 4. `python host/mqtt_publisher.py`
-5. View dashboard at [localhost:3000](http://localhost:3000)
+5. View dashboard at <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer">localhost:3000</a>
 
 </details>
 
 ## Dataset
 
-The [FER2013](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) dataset contains ~35,000 grayscale 48x48 facial expression images. The Disgust class was discarded due to insufficient samples, leaving 6 classes balanced to ~30,000 images.
+The <a href="https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data" target="_blank" rel="noopener noreferrer">FER2013</a> dataset contains ~35,000 grayscale 48x48 facial expression images. The Disgust class was discarded due to insufficient samples, leaving 6 classes balanced to ~30,000 images.
 
 Explore the dataset distribution in [`notebooks/dataset_analysis.ipynb`](notebooks/dataset_analysis.ipynb).
 
@@ -156,10 +148,10 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## References
 
-- [FER2013 Dataset](https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data) - Kaggle
-- [OpenCV Haar Cascades](https://docs.opencv.org/4.x/db/d28/tutorial_cascade_classifier.html) - Face detection
-- [TensorFlow Lite](https://www.tensorflow.org/lite) - On-device ML inference
-- [Eclipse Mosquitto](https://mosquitto.org/) - MQTT broker
-- [Node-Red](https://nodered.org/) - Flow-based IoT programming
-- [InfluxDB](https://www.influxdata.com/) - Time-series database
-- [Grafana](https://grafana.com/) - Data visualization
+- <a href="https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer/data" target="_blank" rel="noopener noreferrer">FER2013 Dataset</a> - Kaggle
+- <a href="https://docs.opencv.org/4.x/db/d28/tutorial_cascade_classifier.html" target="_blank" rel="noopener noreferrer">OpenCV Haar Cascades</a> - Face detection
+- <a href="https://www.tensorflow.org/lite" target="_blank" rel="noopener noreferrer">TensorFlow Lite</a> - On-device ML inference
+- <a href="https://mosquitto.org/" target="_blank" rel="noopener noreferrer">Eclipse Mosquitto</a> - MQTT broker
+- <a href="https://nodered.org/" target="_blank" rel="noopener noreferrer">Node-Red</a> - Flow-based IoT programming
+- <a href="https://www.influxdata.com/" target="_blank" rel="noopener noreferrer">InfluxDB</a> - Time-series database
+- <a href="https://grafana.com/" target="_blank" rel="noopener noreferrer">Grafana</a> - Data visualization
